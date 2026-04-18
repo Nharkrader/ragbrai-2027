@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RAGBRAI LV 2027 Training</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#F7F8FA;color:#1A1A1A;font-size:15px;}
+.topbar{background:#2C3E50;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-title{font-size:16px;font-weight:600;}
+.topbar-sub{font-size:11px;opacity:.7;margin-top:1px;}
+.tbtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;}
+.tabs{display:flex;background:#fff;border-bottom:1px solid #E0E0E0;position:sticky;top:54px;z-index:99;}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:500;color:#666;border-bottom:3px solid transparent;cursor:pointer;}
+.tab.active{color:#2C3E50;border-bottom-color:#2C3E50;}
+.view{display:none;padding:12px;}
+.view.active{display:block;}
+.card{background:#fff;border:1px solid #E0E0E0;border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.ph-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.wk-head{padding:8px 14px;background:#FAFAFA;font-size:12px;font-weight:600;color:#666;display:flex;justify-content:space-between;cursor:pointer;border-top:1px solid #F0F0F0;}
+.collapse{display:none;}
+.collapse.open{display:block;}
+.day-row{display:grid;grid-template-columns:50px 1fr auto;align-items:center;padding:9px 14px;border-top:1px solid #F5F5F5;cursor:pointer;}
+.day-row:first-child{border-top:none;}
+.day-lbl{font-size:11px;font-weight:600;color:#666;}
+.day-dt{font-size:10px;color:#999;}
+.day-plan{font-size:13px;font-weight:600;}
+.day-actual{font-size:12px;color:#1D9E75;font-weight:600;}
+.day-note{font-size:11px;color:#999;margin-top:2px;}
+.dtype{font-size:10px;padding:1px 6px;border-radius:8px;display:inline-block;margin-top:3px;}
+.log-btn{background:#F5F5F5;border:1px solid #E0E0E0;border-radius:8px;padding:5px 10px;font-size:11px;color:#666;cursor:pointer;white-space:nowrap;}
+.log-btn.done{background:#E1F5EE;border-color:#1D9E75;color:#0F6E56;}
+.today-card{background:#fff;border:1px solid #E0E0E0;border-radius:14px;padding:16px;margin-bottom:12px;}
+.metrics{display:flex;gap:8px;margin:12px 0;}
+.met{flex:1;background:#F7F8FA;border-radius:10px;padding:10px;text-align:center;}
+.met-val{font-size:22px;font-weight:700;}
+.met-lbl{font-size:10px;color:#666;margin-top:2px;}
+.tip{background:#FFFDE7;border-left:3px solid #FDD835;border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:#555;line-height:1.5;margin-top:10px;}
+.rest-note{background:#F0F0F0;border-radius:8px;padding:8px 12px;font-size:12px;color:#888;margin-top:8px;}
+.action-btn{width:100%;margin-top:12px;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;color:#fff;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-card{background:#fff;border:1px solid #E0E0E0;border-radius:12px;padding:14px;text-align:center;}
+.stat-val{font-size:28px;font-weight:700;color:#2C3E50;}
+.stat-lbl{font-size:11px;color:#666;margin-top:4px;}
+.prog-wrap{background:#fff;border:1px solid #E0E0E0;border-radius:12px;padding:14px;margin-bottom:10px;}
+.prog-wrap h3{font-size:13px;font-weight:600;color:#666;margin-bottom:12px;}
+.prog-row{margin-bottom:10px;}
+.prog-labels{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.prog-bar{height:8px;background:#F0F0F0;border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;}
+.section-title{font-size:12px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
+.upcoming-card{background:#fff;border:1px solid #E0E0E0;border-radius:12px;margin-bottom:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.phase-ov{background:#fff;border:1px solid #E0E0E0;border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.phase-ov-head{padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.phase-ov-body{padding:10px 14px 14px;border-top:1px solid #F0F0F0;font-size:13px;line-height:1.7;color:#444;}
+.ms-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F5F5F5;}
+.ms-row:last-child{border-bottom:none;}
+.ms-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:16px 16px 0 0;padding:20px 16px 36px;width:100%;max-height:80vh;overflow-y:auto;}
+.modal h2{font-size:16px;font-weight:700;}
+.modal-sub{font-size:12px;color:#666;margin-top:3px;margin-bottom:16px;}
+.modal label{font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:5px;margin-top:14px;}
+.modal input, .modal textarea{width:100%;border:1px solid #DDD;border-radius:8px;padding:10px;font-size:16px;font-family:inherit;}
+.modal textarea{height:80px;resize:none;}
+.modal-btns{display:flex;gap:8px;margin-top:16px;}
+.btn-save{flex:1;background:#1D9E75;color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;}
+.btn-cancel{background:#F0F0F0;color:#333;border:none;border-radius:10px;padding:13px 16px;font-size:15px;cursor:pointer;}
+.btn-del{background:#FFE5E5;color:#C0392B;border:none;border-radius:10px;padding:13px 14px;font-size:13px;cursor:pointer;}
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.chevron{font-size:12px;color:#999;transition:transform .2s;}
+.chevron.open{transform:rotate(180deg);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div><div class="topbar-title">RAGBRAI LV 2027</div><div class="topbar-sub">Training Tracker</div></div>
+  <button class="tbtn" onclick="goToday()">Today</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('today')">Today</div>
+  <div class="tab" onclick="switchTab('log')">Full Log</div>
+  <div class="tab" onclick="switchTab('stats')">Stats</div>
+  <div class="tab" onclick="switchTab('plan')">Plan</div>
+</div>
+
+<div id="v-today" class="view active"></div>
+<div id="v-log"   class="view"></div>
+<div id="v-stats" class="view"></div>
+<div id="v-plan"  class="view"></div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2 id="m-title"></h2>
+    <div class="modal-sub" id="m-sub"></div>
+    <label>Miles ridden</label>
+    <input type="number" id="m-miles" min="0" max="250" step="0.5" placeholder="0">
+    <label>Notes (how you felt, weather, food...)</label>
+    <textarea id="m-notes" placeholder="Optional..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-del" onclick="delLog()">Clear</button>
+      <button class="btn-save" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var ROWS = [];
+var modalKey = null;
+
+// Phase style lookup
+var PS = {
+  "Phase 1 - Foundation": {bg:"#E1F5EE",tx:"#0F6E56",ac:"#1D9E75"},
+  "Phase 2 - Off-Season":  {bg:"#F1EFE8",tx:"#5F5E5A",ac:"#888780"},
+  "Phase 3 - Rebuild":     {bg:"#E1F5EE",tx:"#0F6E56",ac:"#1D9E75"},
+  "Phase 4 - Build":       {bg:"#E6F1FB",tx:"#185FA5",ac:"#378ADD"},
+  "Phase 5 - Peak":        {bg:"#FAEEDA",tx:"#854F0B",ac:"#BA7517"},
+  "Phase 6 - Taper":       {bg:"#EAF3DE",tx:"#3B6D11",ac:"#639922"},
+  "RAGBRAI LV":            {bg:"#D4EDDA",tx:"#155724",ac:"#28A745"}
+};
+
+var TYPE_BG = {long:"#D4EDDA",easy:"#F0F0F0",rest:"#F8F8F8",busy:"#FFF3E0",race:"#CCE5FF"};
+var TYPE_TX = {long:"#155724",easy:"#555",rest:"#999",busy:"#7B3F00",race:"#004085"};
+var TYPE_LB = {long:"Long ride",easy:"Easy",rest:"Rest day",busy:"Short (crunch)",race:"RAGBRAI!"};
+
+function ps(phase) { return PS[phase] || {bg:"#F0F0F0",tx:"#555",ac:"#888"}; }
+
+// Build rows
+function addRow(phase, week, dateStr, planned, type, tip) {
+  var dt = new Date(dateStr + "T00:00:00");
+  var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  ROWS.push({phase:phase, week:week, date:dateStr, day:days[dt.getDay()], planned:planned, type:type, tip:tip||""});
+}
+
+function addWeek(phase, week, startStr, sched, tip) {
+  var base = new Date(startStr + "T00:00:00");
+  for (var i = 0; i < sched.length; i++) {
+    var dt = new Date(base.getTime() + i * 86400000);
+    var y = dt.getFullYear(), m = dt.getMonth()+1, d = dt.getDate();
+    var ds = y + "-" + (m<10?"0"+m:m) + "-" + (d<10?"0"+d:d);
+    var mi = sched[i][0], tp = sched[i][1];
+    addRow(phase, week, ds, mi, tp, tp==="long" && mi>0 ? tip : "");
+  }
+}
+
+function isoToday() {
+  var n = new Date();
+  var y = n.getFullYear(), m = n.getMonth()+1, d = n.getDate();
+  return y + "-" + (m<10?"0"+m:m) + "-" + (d<10?"0"+d:d);
+}
+
+function fmtDate(ds) {
+  var dt = new Date(ds + "T00:00:00");
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[dt.getMonth()] + " " + dt.getDate() + ", " + dt.getFullYear();
+}
+
+// ── BUILD ALL ROWS ────────────────────────────────────────────────────────────
+var P1 = "Phase 1 - Foundation";
+var P2 = "Phase 2 - Off-Season";
+var P3 = "Phase 3 - Rebuild";
+var P4 = "Phase 4 - Build";
+var P5 = "Phase 5 - Peak";
+var P6 = "Phase 6 - Taper";
+var PR = "RAGBRAI LV";
+
+// Phase 1 - Apr 17 start
+var apr = [
+  ["2026-04-17",5,"easy"],["2026-04-18",10,"long"],["2026-04-19",0,"rest"],
+  ["2026-04-20",0,"rest"],["2026-04-21",5,"easy"],["2026-04-22",0,"rest"],
+  ["2026-04-23",0,"rest"],["2026-04-24",0,"rest"],["2026-04-25",10,"long"],
+  ["2026-04-26",0,"rest"],["2026-04-27",0,"rest"],["2026-04-28",0,"rest"],
+  ["2026-04-29",0,"rest"],["2026-04-30",0,"rest"]
+];
+for (var i=0;i<apr.length;i++) {
+  addRow(P1,"Apr 17-30",apr[i][0],apr[i][1],apr[i][2],apr[i][2]==="long"?"Your very first week - get moving! Two short rides and a Saturday long ride.":"");
+}
+
+addWeek(P1,"May wk 1","2026-05-03",[[0,"rest"],[0,"rest"],[12,"easy"],[0,"rest"],[7,"easy"],[0,"rest"],[6,"long"]],"Nudge Saturday up. Keep Tue/Thu easy and conversational.");
+addWeek(P1,"May wk 2","2026-05-10",[[0,"rest"],[0,"rest"],[7,"easy"],[0,"rest"],[7,"easy"],[0,"rest"],[14,"long"]],"Growing steadily. Slow down if Saturday feels hard - finishing matters more than pace.");
+addWeek(P1,"May wk 3","2026-05-17",[[0,"rest"],[0,"rest"],[8,"easy"],[0,"rest"],[8,"easy"],[0,"rest"],[16,"long"]],"Longest ride yet at 16 miles. Start experimenting with snacks and water on the bike.");
+addWeek(P1,"May wk 4","2026-05-24",[[0,"rest"],[0,"rest"],[6,"easy"],[0,"rest"],[6,"easy"],[0,"rest"],[12,"long"]],"Rest week - your body is absorbing the work. Resist the urge to keep pushing.");
+addWeek(P1,"Jun wk 1","2026-05-31",[[0,"rest"],[0,"rest"],[9,"easy"],[0,"rest"],[9,"easy"],[0,"rest"],[18,"long"]],"Back at it with a bigger Saturday. Starting to feel like a real ride!");
+addWeek(P1,"Jun wk 2","2026-06-07",[[0,"rest"],[0,"rest"],[10,"easy"],[0,"rest"],[10,"easy"],[0,"rest"],[20,"long"]],"First 20-miler! A solid milestone. Bring extra water and a snack.");
+addWeek(P1,"Jun wk 3","2026-06-14",[[0,"rest"],[0,"rest"],[11,"easy"],[0,"rest"],[11,"easy"],[0,"rest"],[22,"long"]],"Strong finish to Phase 1. You have more than doubled your starting mileage!");
+addWeek(P1,"Jun wk 4","2026-06-21",[[0,"rest"],[0,"rest"],[10,"easy"],[0,"rest"],[9,"easy"],[0,"rest"],[15,"long"]],"Rest week before the off-season. Be proud of the base you have built.");
+
+// Phase 2 - off season Saturdays only
+var cur = new Date("2026-07-01T00:00:00");
+var endP2 = new Date("2026-09-30T00:00:00");
+while (cur <= endP2) {
+  var isSat = cur.getDay() === 6;
+  var y2=cur.getFullYear(),m2=cur.getMonth()+1,d2=cur.getDate();
+  var ds2 = y2+"-"+(m2<10?"0"+m2:m2)+"-"+(d2<10?"0"+d2:d2);
+  addRow(P2,"Jul-Sep 2026",ds2,isSat?10:0,isSat?"easy":"rest",isSat?"Off-season: short fun ride. Walk, swim, hike on other days.":"");
+  cur = new Date(cur.getTime() + 86400000);
+}
+
+// Phase 3
+addWeek(P3,"Oct wk 1","2026-10-04",[[0,"rest"],[0,"rest"],[9,"easy"],[0,"rest"],[8,"easy"],[0,"rest"],[18,"long"]],"Back on the bike! Your fitness returns faster the second time.");
+addWeek(P3,"Oct wk 2","2026-10-11",[[0,"rest"],[0,"rest"],[10,"easy"],[0,"rest"],[10,"easy"],[0,"rest"],[20,"long"]],"Back to 20-mile Saturdays. Should feel easier than it did in June.");
+addWeek(P3,"Oct wk 3","2026-10-18",[[0,"rest"],[0,"rest"],[12,"easy"],[0,"rest"],[11,"easy"],[0,"rest"],[22,"long"]],"Last big week before the work crunch. Make it count.");
+addWeek(P3,"Oct wk 4","2026-10-25",[[0,"rest"],[0,"rest"],[4,"busy"],[0,"rest"],[3,"busy"],[0,"rest"],[8,"busy"]],"Work crunch - just do what you can. Even 8 miles keeps the habit alive.");
+addWeek(P3,"Nov wk 1","2026-11-01",[[0,"rest"],[0,"rest"],[4,"busy"],[0,"rest"],[3,"busy"],[0,"rest"],[8,"busy"]],"Maintenance mode. Ride easy, stay consistent.");
+addWeek(P3,"Nov wk 2","2026-11-08",[[0,"rest"],[0,"rest"],[4,"busy"],[0,"rest"],[3,"busy"],[0,"rest"],[8,"busy"]],"Maintenance mode. Ride easy, stay consistent.");
+addWeek(P3,"Nov wk 3","2026-11-15",[[0,"rest"],[0,"rest"],[4,"busy"],[0,"rest"],[3,"busy"],[0,"rest"],[8,"busy"]],"Maintenance mode. Ride easy, stay consistent.");
+addWeek(P3,"Nov wk 4","2026-11-22",[[0,"rest"],[0,"rest"],[4,"busy"],[0,"rest"],[3,"busy"],[0,"rest"],[8,"busy"]],"Maintenance mode. Ride easy, stay consistent.");
+addWeek(P3,"Dec wk 1","2026-11-29",[[0,"rest"],[0,"rest"],[4,"busy"],[0,"rest"],[3,"busy"],[0,"rest"],[8,"busy"]],"Almost through it. Keep those short rides going.");
+addWeek(P3,"Dec wk 2","2026-12-06",[[0,"rest"],[0,"rest"],[4,"busy"],[0,"rest"],[3,"busy"],[0,"rest"],[8,"busy"]],"Last crunch week. The rebuild starts next week!");
+addWeek(P3,"Dec wk 3","2026-12-13",[[0,"rest"],[0,"rest"],[9,"easy"],[0,"rest"],[8,"easy"],[0,"rest"],[18,"long"]],"Work crunch over - jump back in. Your body remembers more than you think.");
+addWeek(P3,"Dec wk 4","2026-12-20",[[0,"rest"],[0,"rest"],[12,"easy"],[0,"rest"],[11,"easy"],[0,"rest"],[22,"long"]],"Finish December strong. Back to where you were before the crunch.");
+
+// Phase 4
+addWeek(P4,"Jan wk 1","2027-01-03",[[0,"rest"],[0,"rest"],[10,"easy"],[10,"easy"],[0,"rest"],[7,"easy"],[28,"long"]],"Route announced! Check ragbrai.com for 2027 terrain. You now have 4 riding days.");
+addWeek(P4,"Jan wk 2","2027-01-10",[[0,"rest"],[0,"rest"],[12,"easy"],[12,"easy"],[0,"rest"],[9,"easy"],[32,"long"]],"Building nicely. Bring food and plenty of water on Saturday.");
+addWeek(P4,"Jan wk 3","2027-01-17",[[0,"rest"],[0,"rest"],[14,"easy"],[13,"easy"],[0,"rest"],[10,"easy"],[38,"long"]],"Nearly 40 miles on a Saturday. Eat something every 45-60 minutes.");
+addWeek(P4,"Jan wk 4","2027-01-24",[[0,"rest"],[0,"rest"],[10,"easy"],[10,"easy"],[0,"rest"],[10,"easy"],[25,"long"]],"Rest week - drop Saturday back and let your legs recover.");
+addWeek(P4,"Feb wk 1","2027-01-31",[[0,"rest"],[0,"rest"],[16,"easy"],[15,"easy"],[0,"rest"],[12,"easy"],[42,"long"]],"Closing in on 45 miles. Practice the exact foods you plan to use on RAGBRAI.");
+addWeek(P4,"Feb wk 2","2027-02-07",[[0,"rest"],[0,"rest"],[18,"easy"],[16,"easy"],[0,"rest"],[13,"easy"],[48,"long"]],"Almost 50! You should be feeling genuinely strong on the bike now.");
+addWeek(P4,"Feb wk 3","2027-02-14",[[0,"rest"],[0,"rest"],[20,"easy"],[18,"easy"],[0,"rest"],[17,"easy"],[50,"long"]],"FIRST 50-MILE RIDE! Start slow, eat early, and enjoy it. Huge milestone.");
+addWeek(P4,"Feb wk 4","2027-02-21",[[0,"rest"],[0,"rest"],[15,"easy"],[15,"easy"],[0,"rest"],[13,"easy"],[32,"long"]],"Recovery after your 50-miler. Your body needs this.");
+addWeek(P4,"Mar wk 1","2027-02-28",[[0,"rest"],[0,"rest"],[20,"easy"],[18,"easy"],[0,"rest"],[17,"easy"],[55,"long"]],"Back to building. 55-mile Saturdays are becoming normal.");
+addWeek(P4,"Mar wk 2","2027-03-07",[[0,"rest"],[0,"rest"],[20,"easy"],[20,"easy"],[0,"rest"],[17,"easy"],[58,"long"]],"Nearing 60 miles. Try a back-to-back: ride Saturday AND a shorter Sunday.");
+addWeek(P4,"Mar wk 3","2027-03-14",[[0,"rest"],[0,"rest"],[22,"easy"],[20,"easy"],[0,"rest"],[18,"easy"],[60,"long"]],"First 60-mile ride! Split into morning and afternoon if weather is bad.");
+addWeek(P4,"Mar wk 4","2027-03-21",[[0,"rest"],[0,"rest"],[18,"easy"],[15,"easy"],[0,"rest"],[14,"easy"],[38,"long"]],"Rest week. You have put in serious work - let it sink in.");
+addWeek(P4,"Apr wk 1","2027-03-28",[[0,"rest"],[0,"rest"],[22,"easy"],[22,"easy"],[0,"rest"],[19,"easy"],[62,"long"]],"Metric century territory on Saturdays!");
+addWeek(P4,"Apr wk 2","2027-04-06",[[0,"rest"],[0,"rest"],[23,"easy"],[22,"easy"],[0,"rest"],[20,"easy"],[65,"long"]],"65 miles. Focus on pacing - hold a conversation for most of the ride.");
+addWeek(P4,"Apr wk 3","2027-04-13",[[0,"rest"],[0,"rest"],[24,"easy"],[23,"easy"],[0,"rest"],[20,"easy"],[68,"long"]],"Almost to your 70-mile target. Strong work.");
+addWeek(P4,"Apr wk 4","2027-04-20",[[0,"rest"],[0,"rest"],[22,"easy"],[18,"easy"],[0,"rest"],[15,"easy"],[45,"long"]],"Rest week before Peak phase. The hardest training is about to begin.");
+
+// Phase 5
+addWeek(P5,"May wk 1","2027-05-02",[[0,"rest"],[0,"rest"],[25,"easy"],[25,"easy"],[0,"rest"],[25,"easy"],[65,"long"]],"Peak phase! Try riding Saturday AND Sunday - back-to-back days simulate RAGBRAI.");
+addWeek(P5,"May wk 2","2027-05-09",[[0,"rest"],[0,"rest"],[28,"easy"],[27,"easy"],[0,"rest"],[27,"easy"],[68,"long"]],"Riding on tired legs is exactly what RAGBRAI will feel like.");
+addWeek(P5,"May wk 3","2027-05-16",[[0,"rest"],[0,"rest"],[30,"easy"],[30,"easy"],[0,"rest"],[30,"easy"],[70,"long"]],"FIRST 70-MILE RIDE! Ride 70 in training and you can ride 100 on event day.");
+addWeek(P5,"May wk 4","2027-05-23",[[0,"rest"],[0,"rest"],[25,"easy"],[22,"easy"],[0,"rest"],[20,"easy"],[48,"long"]],"Rest week after your biggest month. You have earned it.");
+addWeek(P5,"Jun wk 1","2027-05-30",[[0,"rest"],[0,"rest"],[32,"easy"],[30,"easy"],[0,"rest"],[33,"easy"],[70,"long"]],"One more 70-miler. It should feel noticeably easier than the first one in May.");
+addWeek(P5,"Jun wk 2","2027-06-06",[[0,"rest"],[0,"rest"],[38,"easy"],[38,"easy"],[0,"rest"],[37,"easy"],[62,"long"]],"METRIC CENTURY EVENT WEEK - find a local 62-mile ride. Perfect dress rehearsal.");
+addWeek(P5,"Jun wk 3","2027-06-13",[[0,"rest"],[0,"rest"],[35,"easy"],[35,"easy"],[0,"rest"],[35,"easy"],[70,"long"]],"Final big week. You are as fit as you have ever been on a bike.");
+addWeek(P5,"Jun wk 4","2027-06-20",[[0,"rest"],[0,"rest"],[28,"easy"],[25,"easy"],[0,"rest"],[22,"easy"],[50,"long"]],"Last rest week. The hard work is done.");
+
+// Phase 6
+addWeek(P6,"Jul wk 1","2027-06-27",[[0,"rest"],[0,"rest"],[18,"easy"],[17,"easy"],[0,"rest"],[15,"easy"],[40,"long"]],"Cut volume in half. Your legs are storing energy - do not waste it.");
+addWeek(P6,"Jul wk 2","2027-07-06",[[0,"rest"],[0,"rest"],[14,"easy"],[12,"easy"],[0,"rest"],[9,"easy"],[25,"long"]],"Almost there. Ride just enough to stay sharp. Focus on sleep and packing.");
+addWeek(P6,"Jul wk 3","2027-07-13",[[0,"rest"],[0,"rest"],[15,"easy"],[10,"easy"],[0,"rest"],[0,"rest"],[5,"easy"]],"Very light week. Expo is July 24 - travel, set up, rest your legs.");
+
+// Race
+addRow(PR,"Jul 25-31, 2027","2027-07-25",56,"race","Day 1 of 7 - pace yourself, eat at every stop, soak it all in!");
+addRow(PR,"Jul 25-31, 2027","2027-07-26",56,"race","Day 2 - legs will be tired. That is normal. Eat more than you think you need.");
+addRow(PR,"Jul 25-31, 2027","2027-07-27",56,"race","Day 3 - you are in a rhythm now. Enjoy the towns!");
+addRow(PR,"Jul 25-31, 2027","2027-07-28",56,"race","Day 4 - halfway done. You have got this.");
+addRow(PR,"Jul 25-31, 2027","2027-07-29",56,"race","Day 5 - the hardest day mentally. Push through.");
+addRow(PR,"Jul 25-31, 2027","2027-07-30",56,"race","Day 6 - one day to go. Save something for tomorrow!");
+addRow(PR,"Jul 25-31, 2027","2027-07-31",55,"race","Day 7 - the final push. Finish strong! 391 miles done!");
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+function getLog() {
+  try { return JSON.parse(localStorage.getItem("rg27") || "{}"); } catch(e) { return {}; }
+}
+function setLog(data) {
+  try { localStorage.setItem("rg27", JSON.stringify(data)); } catch(e) {}
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(dateKey) {
+  modalKey = dateKey;
+  var row = null;
+  for (var i=0;i<ROWS.length;i++) { if (ROWS[i].date===dateKey){row=ROWS[i];break;} }
+  if (!row) return;
+  var log = getLog();
+  var entry = log[dateKey] || {};
+  document.getElementById("m-title").textContent = row.day + ", " + fmtDate(dateKey);
+  document.getElementById("m-sub").textContent = (row.planned ? "Planned: " + row.planned + " mi" : "Rest day") + " - " + (TYPE_LB[row.type]||row.type);
+  document.getElementById("m-miles").value = entry.actual !== undefined ? entry.actual : "";
+  document.getElementById("m-notes").value = entry.notes || "";
+  document.getElementById("modal-bg").className = "modal-bg open";
+  setTimeout(function(){document.getElementById("m-miles").focus();},100);
+}
+function closeModal() {
+  document.getElementById("modal-bg").className = "modal-bg";
+  modalKey = null;
+}
+function saveModal() {
+  if (!modalKey) return;
+  var mi = parseFloat(document.getElementById("m-miles").value) || 0;
+  var notes = document.getElementById("m-notes").value;
+  var log = getLog();
+  log[modalKey] = {actual:mi, notes:notes, ts:Date.now()};
+  setLog(log);
+  closeModal();
+  renderAll();
+}
+function delLog() {
+  if (!modalKey) return;
+  var log = getLog();
+  delete log[modalKey];
+  setLog(log);
+  closeModal();
+  renderAll();
+}
+document.getElementById("modal-bg").onclick = function(e) {
+  if (e.target === document.getElementById("modal-bg")) closeModal();
+};
+
+// ── TODAY ─────────────────────────────────────────────────────────────────────
+function renderToday() {
+  var el = document.getElementById("v-today");
+  var today = isoToday();
+  var log = getLog();
+  var row = null;
+  for (var i=0;i<ROWS.length;i++){if(ROWS[i].date===today){row=ROWS[i];break;}}
+  var html = "";
+
+  if (row) {
+    var p = ps(row.phase);
+    var entry = log[today] || {};
+    var logged = entry.actual !== undefined && entry.actual > 0;
+    var isRest = row.planned === 0;
+    html += '<div class="today-card">';
+    html += '<div style="font-size:18px;font-weight:700;">' + row.day + ', ' + fmtDate(today) + '</div>';
+    html += '<div style="font-size:13px;color:' + p.tx + ';font-weight:600;margin-top:2px;">' + row.phase + ' &mdash; ' + row.week + '</div>';
+    html += '<div class="metrics">';
+    html += '<div class="met"><div class="met-val" style="color:' + p.ac + '">' + (row.planned || "Rest") + '</div><div class="met-lbl">Planned (mi)</div></div>';
+    html += '<div class="met"><div class="met-val" style="color:' + (logged?"#1D9E75":"#CCC") + '">' + (logged?entry.actual:"--") + '</div><div class="met-lbl">Actual (mi)</div></div>';
+    html += '<div class="met"><div class="met-val" style="font-size:13px;padding-top:4px;">' + (TYPE_LB[row.type]||row.type) + '</div><div class="met-lbl">Type</div></div>';
+    html += '</div>';
+    if (entry.notes) html += '<div style="background:#F8F9FA;border-radius:8px;padding:10px;font-size:13px;color:#555;margin-bottom:8px;">' + entry.notes + '</div>';
+    if (row.tip) html += '<div class="tip">' + row.tip + '</div>';
+    if (isRest && !logged) html += '<div class="rest-note">Rest day &mdash; if you decide to ride anyway, tap below to log it.</div>';
+    html += '<button class="action-btn" style="background:' + (logged?"#1D9E75":p.ac) + ';" onclick="openModal(\'' + today + '\')">' + (logged?"Edit log entry":isRest?"Log a bonus ride":"Log this ride") + '</button>';
+    html += '</div>';
+  } else {
+    html += '<div class="today-card"><div style="font-size:18px;font-weight:700;">No date match</div></div>';
+  }
+
+  // Upcoming
+  var upcoming = [];
+  for (var j=0;j<ROWS.length;j++){if(ROWS[j].date>today && ROWS[j].planned>0){upcoming.push(ROWS[j]);if(upcoming.length>=5)break;}}
+  if (upcoming.length) {
+    html += '<div class="section-title">Coming up</div>';
+    for (var k=0;k<upcoming.length;k++){
+      var r=upcoming[k];var p2=ps(r.phase);var e2=log[r.date]||{};
+      html += '<div class="upcoming-card" onclick="openModal(\'' + r.date + '\')">';
+      html += '<div style="display:flex;align-items:center;gap:10px;"><div style="background:' + p2.bg + ';color:' + p2.tx + ';font-size:11px;font-weight:600;padding:3px 8px;border-radius:8px;">' + r.day + '</div>';
+      html += '<div><div style="font-size:13px;font-weight:600;">' + fmtDate(r.date) + '</div><div style="font-size:11px;color:#666;">' + r.week + '</div></div></div>';
+      html += '<div style="text-align:right;"><div style="font-size:16px;font-weight:700;color:' + p2.ac + '">' + r.planned + ' mi</div>';
+      html += '<div style="font-size:10px;color:#666;">' + (TYPE_LB[r.type]||r.type) + '</div></div></div>';
+    }
+  }
+  el.innerHTML = html;
+}
+
+// ── FULL LOG ──────────────────────────────────────────────────────────────────
+function renderLog() {
+  var el = document.getElementById("v-log");
+  var log = getLog();
+  var today = isoToday();
+
+  // Group by phase > week
+  var phases = [];
+  var phaseIdx = {};
+  for (var i=0;i<ROWS.length;i++){
+    var r=ROWS[i];
+    if (phaseIdx[r.phase] === undefined) {
+      phaseIdx[r.phase] = phases.length;
+      phases.push({name:r.phase, weeks:[], weekIdx:{}});
+    }
+    var ph = phases[phaseIdx[r.phase]];
+    if (ph.weekIdx[r.week] === undefined) {
+      ph.weekIdx[r.week] = ph.weeks.length;
+      ph.weeks.push({name:r.week, rows:[]});
+    }
+    ph.weeks[ph.weekIdx[r.week]].rows.push(r);
+  }
+
+  var html = "";
+  for (var pi=0;pi<phases.length;pi++){
+    var phase=phases[pi];
+    var p=ps(phase.name);
+    var phId="ph"+pi;
+    var hasActive=false;
+    for(var wi=0;wi<phase.weeks.length;wi++){for(var ri=0;ri<phase.weeks[wi].rows.length;ri++){if(phase.weeks[wi].rows[ri].date<=today){hasActive=true;break;}}}
+    html += '<div class="card">';
+    html += '<div class="ph-head" onclick="tog(\'' + phId + '\')">';
+    html += '<span class="badge" style="background:' + p.bg + ';color:' + p.tx + ';">' + phase.name + '</span>';
+    html += '<span class="chevron' + (hasActive?" open":"") + '" id="c-' + phId + '">&#9660;</span></div>';
+    html += '<div class="collapse' + (hasActive?" open":"") + '" id="' + phId + '">';
+
+    for (var wi2=0;wi2<phase.weeks.length;wi2++){
+      var wk=phase.weeks[wi2];
+      var wkId="wk"+pi+"_"+wi2;
+      var wkPlan=0,wkAct=0;
+      for(var ri2=0;ri2<wk.rows.length;ri2++){wkPlan+=wk.rows[ri2].planned;wkAct+=(log[wk.rows[ri2].date]?log[wk.rows[ri2].date].actual||0:0);}
+      var wkActive=false;
+      for(var ri3=0;ri3<wk.rows.length;ri3++){if(wk.rows[ri3].date<=today){wkActive=true;break;}}
+      html += '<div style="border-top:1px solid #F0F0F0;">';
+      html += '<div class="wk-head" onclick="tog(\'' + wkId + '\')">';
+      html += '<span>' + wk.name + '</span>';
+      html += '<span class="wk-stats">planned: ' + wkPlan + ' mi' + (wkAct?' &middot; actual: '+wkAct+' mi':'') + '</span></div>';
+      html += '<div class="collapse' + (wkActive?" open":"") + '" id="' + wkId + '">';
+
+      for(var ri4=0;ri4<wk.rows.length;ri4++){
+        var row=wk.rows[ri4];
+        var entry=log[row.date]||{};
+        var logged2=entry.actual!==undefined&&entry.actual>0;
+        var isToday=row.date===today;
+        html += '<div class="day-row" onclick="openModal(\'' + row.date + '\')" style="background:' + (isToday?"#FFFDE7":TYPE_BG[row.type]||"#fff") + ';">';
+        html += '<div><div class="day-lbl" style="color:' + (isToday?p.ac:"#666") + ';">' + row.day + (isToday?" *":"") + '</div><div class="day-dt">' + row.date.slice(5) + '</div></div>';
+        html += '<div><div class="day-plan">' + (row.planned?row.planned+" mi planned":"Rest day") + '</div>';
+        if (logged2) html += '<div class="day-actual">&#10003; ' + entry.actual + ' mi logged</div>';
+        if (entry.notes) html += '<div class="day-note">' + entry.notes + '</div>';
+        html += '<span class="dtype" style="background:' + (TYPE_BG[row.type]||"#EEE") + ';color:' + (TYPE_TX[row.type]||"#555") + ';">' + (TYPE_LB[row.type]||row.type) + '</span></div>';
+        html += '<button class="log-btn' + (logged2?" done":"") + '">' + (logged2?"Edit":"Log") + '</button>';
+        html += '</div>';
+      }
+      html += '</div></div>';
+    }
+    html += '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+function tog(id){
+  var el=document.getElementById(id);
+  var ch=document.getElementById("c-"+id);
+  if(el.className.indexOf("open")>=0){el.className=el.className.replace(" open","");}else{el.className+=" open";}
+  if(ch){if(ch.className.indexOf("open")>=0){ch.className=ch.className.replace(" open","");}else{ch.className+=" open";}}
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function renderStats() {
+  var el = document.getElementById("v-stats");
+  var log = getLog();
+  var today = isoToday();
+  var totalAct=0,totalDays=0,longest=0;
+  var keys=Object.keys(log);
+  for(var i=0;i<keys.length;i++){var e=log[keys[i]];var mi=e.actual||0;totalAct+=mi;if(mi>0)totalDays++;if(mi>longest)longest=mi;}
+  var totalPlan=0;
+  for(var j=0;j<ROWS.length;j++){if(ROWS[j].date<=today)totalPlan+=ROWS[j].planned;}
+  var pct=totalPlan>0?Math.round(totalAct/totalPlan*100):0;
+
+  var raceDate=new Date("2027-07-25T00:00:00");
+  var daysLeft=Math.max(0,Math.ceil((raceDate-new Date())/86400000));
+
+  var phMap={};
+  for(var k=0;k<ROWS.length;k++){var r=ROWS[k];if(!phMap[r.phase])phMap[r.phase]={plan:0,act:0,ac:ps(r.phase).ac};phMap[r.phase].plan+=r.planned;phMap[r.phase].act+=(log[r.date]?log[r.date].actual||0:0);}
+
+  var html='<div class="stats-grid">';
+  html+='<div class="stat-card"><div class="stat-val">'+totalAct+'</div><div class="stat-lbl">Miles ridden</div></div>';
+  html+='<div class="stat-card"><div class="stat-val">'+totalDays+'</div><div class="stat-lbl">Rides logged</div></div>';
+  html+='<div class="stat-card"><div class="stat-val">'+longest+'</div><div class="stat-lbl">Longest ride (mi)</div></div>';
+  html+='<div class="stat-card"><div class="stat-val">'+pct+'%</div><div class="stat-lbl">On-plan rate</div></div>';
+  html+='</div>';
+
+  html+='<div class="prog-wrap"><h3>Miles by phase</h3>';
+  var phNames=Object.keys(phMap);
+  for(var pi=0;pi<phNames.length;pi++){
+    var pn=phNames[pi];var ph=phMap[pn];var pct2=ph.plan>0?Math.min(100,Math.round(ph.act/ph.plan*100)):0;
+    html+='<div class="prog-row"><div class="prog-labels"><span>'+pn+'</span><span style="color:#999;">'+ph.act+'/'+ph.plan+' mi</span></div>';
+    html+='<div class="prog-bar"><div class="prog-fill" style="width:'+pct2+'%;background:'+ph.ac+';"></div></div></div>';
+  }
+  html+='</div>';
+
+  html+='<div class="prog-wrap" style="text-align:center;"><div style="font-size:48px;font-weight:700;color:#2C3E50;">'+daysLeft+'</div>';
+  html+='<div style="font-size:14px;color:#666;">days until RAGBRAI LV</div>';
+  html+='<div style="font-size:12px;color:#999;margin-top:4px;">July 25, 2027</div></div>';
+
+  html+='<button onclick="exportCSV()" style="width:100%;background:#2C3E50;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;">Export log as CSV</button>';
+  html+='<div style="font-size:11px;color:#999;text-align:center;margin-top:8px;">Downloads your logged rides</div>';
+
+  el.innerHTML=html;
+}
+
+function exportCSV(){
+  var log=getLog();
+  var lines=["Date,Day,Phase,Week,Planned,Actual,Notes"];
+  for(var i=0;i<ROWS.length;i++){
+    var r=ROWS[i];var e=log[r.date]||{};
+    lines.push([r.date,r.day,r.phase,r.week,r.planned,e.actual||"",'"'+(e.notes||"").replace(/"/g,'""')+'"'].join(","));
+  }
+  var a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(lines.join("\n"));
+  a.download="RAGBRAI_2027_Log.csv";
+  a.click();
+}
+
+// ── PLAN ──────────────────────────────────────────────────────────────────────
+function renderPlan(){
+  var el=document.getElementById("v-plan");
+  var ov=[
+    {ph:"Phase 1 - Foundation",  dates:"Apr 17 - Jun 2026",  days:"3",   weekly:"20-44 mi",  long:"10-22 mi", goal:"Build the habit. Get consistent on the bike."},
+    {ph:"Phase 2 - Off-Season",  dates:"Jul - Sep 2026",     days:"1-2", weekly:"~20 mi",    long:"10 mi",    goal:"Active recovery. Walk, swim, hike. Recharge."},
+    {ph:"Phase 3 - Rebuild",     dates:"Oct - Dec 2026",     days:"3",   weekly:"15-45 mi",  long:"8-22 mi",  goal:"Rebuild base; survive work crunch at 15 mi/wk."},
+    {ph:"Phase 4 - Build",       dates:"Jan - Apr 2027",     days:"4",   weekly:"55-135 mi", long:"28-68 mi", goal:"Ramp hard. First 50-mi ride in February."},
+    {ph:"Phase 5 - Peak",        dates:"May - Jun 2027",     days:"4-5", weekly:"140-175 mi",long:"65-70 mi", goal:"Back-to-back days. First 70-mi ride. Metric century."},
+    {ph:"Phase 6 - Taper",       dates:"Jul 1-24, 2027",     days:"3",   weekly:"90-30 mi",  long:"40-5 mi",  goal:"Cut volume 50%. Rest, eat well, sleep well."},
+    {ph:"RAGBRAI LV",            dates:"Jul 25-31, 2027",    days:"7",   weekly:"391 mi",    long:"~56 mi/day",goal:"Ride across Iowa. You have earned this!"}
+  ];
+  var html='<div class="section-title">Training phases</div>';
+  for(var i=0;i<ov.length;i++){
+    var o=ov[i];var p=ps(o.ph);
+    html+='<div class="phase-ov"><div class="phase-ov-head">';
+    html+='<div style="width:10px;height:10px;border-radius:50%;background:'+p.ac+';flex-shrink:0;"></div>';
+    html+='<div><div style="font-size:14px;font-weight:600;">'+o.ph+'</div><div style="font-size:12px;color:#666;">'+o.dates+'</div></div></div>';
+    html+='<div class="phase-ov-body">';
+    html+='<b>Goal:</b> '+o.goal+'<br>';
+    html+='<b>Riding days/wk:</b> '+o.days+'&nbsp;&nbsp;<b>Weekly total:</b> '+o.weekly+'&nbsp;&nbsp;<b>Long ride:</b> '+o.long;
+    html+='</div></div>';
+  }
+  var ms=[
+    ["Feb 2027","First 50-mile ride","#378ADD"],
+    ["Mar 2027","First 60-mile ride","#378ADD"],
+    ["May 2027","First 70-mile ride","#BA7517"],
+    ["Jun 2027","Metric century event (62 mi)","#BA7517"],
+    ["Jul 24, 2027","RAGBRAI Expo - travel day","#639922"],
+    ["Jul 25-31, 2027","RAGBRAI LV - ride across Iowa!","#28A745"]
+  ];
+  html+='<div class="section-title" style="margin-top:16px;">Key milestones</div><div class="card" style="padding:14px;">';
+  for(var j=0;j<ms.length;j++){
+    html+='<div class="ms-row"><div class="ms-dot" style="background:'+ms[j][2]+';"></div>';
+    html+='<div><div style="font-size:13px;font-weight:600;">'+ms[j][1]+'</div><div style="font-size:11px;color:#666;">'+ms[j][0]+'</div></div></div>';
+  }
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function switchTab(name){
+  var tabs=["today","log","stats","plan"];
+  for(var i=0;i<tabs.length;i++){
+    document.getElementById("v-"+tabs[i]).className="view"+(tabs[i]===name?" active":"");
+    document.querySelectorAll(".tab")[i].className="tab"+(tabs[i]===name?" active":"");
+  }
+  if(name==="today")renderToday();
+  else if(name==="log")renderLog();
+  else if(name==="stats")renderStats();
+  else if(name==="plan")renderPlan();
+}
+
+function goToday(){switchTab("today");}
+
+function renderAll(){
+  var tabs=["today","log","stats","plan"];
+  for(var i=0;i<tabs.length;i++){
+    if(document.getElementById("v-"+tabs[i]).className.indexOf("active")>=0){
+      switchTab(tabs[i]);return;
+    }
+  }
+}
+
+// Init
+renderToday();
+renderPlan();
+</script>
+
+</body>
+</html>
